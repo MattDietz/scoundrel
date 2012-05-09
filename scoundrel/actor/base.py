@@ -1,19 +1,19 @@
 class Actor(object):
-    def __init__(self, position):
+    def __init__(self, position=None):
         self.position = position
 
     @property
     def x(self):
-        return self.position[0]
+        def fget(self):
+            return self.position[0]
 
-    @x.setter
-    def x_setter(self, xv):
-        self.position[0] = xv
-
-    @y.setter
-    def y_setter(self, yv):
-        self.position[1] = yv
+        def fset(self, x):
+            self.position[0] = xv
 
     @property
-    def y(self):
-        return self.position[1]
+    def y(self, yv):
+        def fget(self):
+            return self.position[1]
+
+        def fset(self, y):
+            self.position[1] = yv

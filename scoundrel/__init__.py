@@ -1,6 +1,7 @@
 import pygame
 import pygame.locals
 
+import scoundrel.actor.player
 import scoundrel.engine
 import scoundrel.engine.context
 from scoundrel import state_machine
@@ -16,7 +17,8 @@ class Scoundrel(object):
     def init(cls, conf):
         cls.context = scoundrel.engine.init(conf)
         cls.init_keymap(conf)
-        cls.world = scoundrel.world.World()
+        player = scoundrel.actor.player.PlayerActor()
+        cls.world = scoundrel.world.World(player)
         state_machine.playing()
 
     @classmethod
