@@ -21,7 +21,7 @@ class Scoundrel(object):
         cls.world = scoundrel.world.World(player, conf)
 
         # Default values weren't working on a mac
-        pygame.key.set_repeat(100, 100)
+        pygame.key.set_repeat(100, 50)
         state_machine.playing()
 
     @classmethod
