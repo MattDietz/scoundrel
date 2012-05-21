@@ -12,7 +12,7 @@ if os.path.exists(os.path.join(possible_topdir, 'scoundrel', '__init__.py')):
 import scoundrel
 
 if __name__ == '__main__':
-    conf = dict(width=800, height=600, mode_flags=0)
+    conf = dict(width=810, height=600, mode_flags=0)
     scoundrel.Scoundrel.init(conf)
     try:
         scoundrel.Scoundrel.play()
