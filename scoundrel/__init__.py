@@ -3,7 +3,6 @@ import pygame.locals
 
 import scoundrel.actor.player
 import scoundrel.engine
-import scoundrel.engine.context
 from scoundrel import state_machine
 import scoundrel.world
 
@@ -15,7 +14,7 @@ class Scoundrel(object):
 
     @classmethod
     def init(cls, conf):
-        cls.context = scoundrel.engine.init(conf)
+        scoundrel.engine.init(conf)
         cls.init_keymap(conf)
         player = scoundrel.actor.player.PlayerActor([15, 15])
         cls.world = scoundrel.world.World(player, conf)
@@ -80,25 +79,24 @@ class Scoundrel(object):
 
     @classmethod
     def draw(cls):
-        scoundrel.engine.begin_draw(cls.context)
-        cls.context.screen.fill(scoundrel.engine.colors['black'])
-        even = True
-        for i in xrange(20):
-            even = not even
-            for j in xrange(40):
-                rect = pygame.Rect(j*30, i*30, 30, 30)
-                if even:
-                    pygame.draw.rect(cls.context.screen,
-                                     scoundrel.engine.colors['green'],
-                                     rect)
-                else:
-                    pygame.draw.rect(cls.context.screen,
-                                     scoundrel.engine.colors['white'],
-                                     rect)
-                    
+        with scoundrel.engine.drawing_context() as context:
+            context.screen.fill(scoundrel.engine.colors['black'])
+            even = True
+            for i in xrange(20):
                 even = not even
-        cls.world.draw(cls.context)
-        scoundrel.engine.end_draw(cls.context)
+                for j in xrange(40):
+                    rect = pygame.Rect(j*30, i*30, 30, 30)
+                    if even:
+                        pygame.draw.rect(context.screen,
+                                         scoundrel.engine.colors['green'],
+                                         rect)
+                    else:
+                        pygame.draw.rect(context.screen,
+                                         scoundrel.engine.colors['white'],
+                                         rect)
+
+                    even = not even
+            cls.world.draw(context)
 
     @classmethod
     def play(cls):
@@ -107,4 +105,3 @@ class Scoundrel(object):
             cls.draw()
             cls.handle_events()
             #cls.ai()
-            
