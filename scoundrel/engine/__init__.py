@@ -7,24 +7,8 @@ context = None
 
 class Context(object):
     def __init__(self, screen=None, clock=None):
-        self._clock = clock
-        self._screen = screen
-
-    @property
-    def screen(self):
-        return self._screen
-
-    @screen.setter
-    def screen(self, screen):
-        self._screen = screen
-
-    @property
-    def clock(self):
-        return self._clock
-
-    @clock.setter
-    def clock(self, clock):
-        self._clock = clock
+        self.clock = clock
+        self.screen = screen
 
     def __enter__(self):
         return self
@@ -39,11 +23,10 @@ class Context(object):
 def init(conf):
     global context
     pygame.init()
-    context = Context()
+    context = Context(clock=pygame.time.Clock())
     context.screen = pygame.display.set_mode((conf['width'],
                                               conf['height']),
                                               conf['mode_flags'])
-    context.clock = pygame.time.Clock()
 
 
 def drawing_context():

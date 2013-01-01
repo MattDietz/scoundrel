@@ -1,5 +1,3 @@
-import pygame
-
 import scoundrel.engine
 
 class World(object):
@@ -8,12 +6,12 @@ class World(object):
 
         # the player is an actor, but still a special one
         self.player = player
+        self.actors.append(player)
         self.conf = conf
 
     def step(self, count=1):
         pass
 
     def draw(self, context):
-        #TODO(cerberus): un-hardcode the radius, store the tile width elsewhere
-        pygame.draw.circle(context.screen, scoundrel.engine.colors['red'],
-                           self.player.position, 15)
+        for actor in self.actors:
+            actor.draw(context)

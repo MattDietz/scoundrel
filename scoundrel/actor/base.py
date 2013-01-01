@@ -17,3 +17,7 @@ class Actor(object):
 
         def fset(self, y):
             self.position[1] = yv
+
+
+    def draw(self, context):
+        pass

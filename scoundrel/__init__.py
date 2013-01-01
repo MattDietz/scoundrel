@@ -3,7 +3,6 @@ import pygame.locals
 
 import scoundrel.actor.player
 import scoundrel.engine
-from scoundrel import state_machine
 import scoundrel.world
 
 
@@ -12,73 +11,62 @@ class StopExecution(Exception): pass
 
 class Scoundrel(object):
 
-    @classmethod
-    def init(cls, conf):
+    def __init__(self, conf):
         scoundrel.engine.init(conf)
-        cls.init_keymap(conf)
+        self.init_keymap(conf)
         player = scoundrel.actor.player.PlayerActor([15, 15])
-        cls.world = scoundrel.world.World(player, conf)
+        self.world = scoundrel.world.World(player, conf)
 
         # Default values weren't working on a mac
         pygame.key.set_repeat(100, 50)
-        state_machine.playing()
 
-    @classmethod
-    def init_keymap(cls, conf):
-        cls.keymap = {
-            pygame.locals.K_LEFT: cls.key_arrow_left,
-            pygame.locals.K_RIGHT: cls.key_arrow_right,
-            pygame.locals.K_UP: cls.key_arrow_up,
-            pygame.locals.K_DOWN: cls.key_arrow_down,
-            pygame.locals.K_ESCAPE: cls.quit}
+    def init_keymap(self, conf):
+        self.keymap = {
+            pygame.locals.K_LEFT: self.key_arrow_left,
+            pygame.locals.K_RIGHT: self.key_arrow_right,
+            pygame.locals.K_UP: self.key_arrow_up,
+            pygame.locals.K_DOWN: self.key_arrow_down,
+            pygame.locals.K_ESCAPE: self.quit}
 
     #TODO(cerberus): un-harcode the movement
-    @classmethod
-    def key_arrow_left(cls):
-        player = cls.world.player
+    def key_arrow_left(self):
+        player = self.world.player
         player.position[0] -= 15
         if player.position[0] < 15:
             player.position[0] = 15
 
-    @classmethod
-    def key_arrow_right(cls):
-        player = cls.world.player
+    def key_arrow_right(self):
+        player = self.world.player
         player.position[0] += 15
-        if player.position[0] > cls.world.conf['width']-15:
-            player.position[0] = cls.world.conf['width']-15
+        if player.position[0] > self.world.conf['width']-15:
+            player.position[0] = self.world.conf['width']-15
 
-    @classmethod
-    def key_arrow_up(cls):
-        player = cls.world.player
+    def key_arrow_up(self):
+        player = self.world.player
         player.position[1] -= 15
         if player.position[1] < 15:
             player.position[1] = 15
 
-    @classmethod
-    def key_arrow_down(cls):
-        player = cls.world.player
+    def key_arrow_down(self):
+        player = self.world.player
         player.position[1] += 15
-        if player.position[1] > cls.world.conf['height']-15:
-            player.position[1] = cls.world.conf['height']-15
+        if player.position[1] > self.world.conf['height']-15:
+            player.position[1] = self.world.conf['height']-15
 
-    @classmethod
-    def quit(cls):
+    def quit(self):
         raise StopExecution()
 
-    @classmethod
-    def handle_events(cls):
+    def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.locals.QUIT:
                 raise StopExecution()
             if event.type == pygame.locals.KEYDOWN:
-                handler = cls.keymap.get(event.key, None)
+                handler = self.keymap.get(event.key, None)
                 if handler:
-                    cls.keymap[event.key]()
-                    if state_machine.state == state_machine.PLAYING:
-                        cls.world.step()
+                    self.keymap[event.key]()
+                    self.world.step()
 
-    @classmethod
-    def draw(cls):
+    def draw(self):
         with scoundrel.engine.drawing_context() as context:
             context.screen.fill(scoundrel.engine.colors['black'])
             even = True
@@ -96,12 +84,11 @@ class Scoundrel(object):
                                          rect)
 
                     even = not even
-            cls.world.draw(context)
+            self.world.draw(context)
 
-    @classmethod
-    def play(cls):
+    def play(self):
         while True:
-            #cls.play_audio()
-            cls.draw()
-            cls.handle_events()
-            #cls.ai()
+            #self.play_audio()
+            self.draw()
+            self.handle_events()
+            #self.ai()

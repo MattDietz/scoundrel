@@ -13,8 +13,8 @@ import scoundrel
 
 if __name__ == '__main__':
     conf = dict(width=810, height=600, mode_flags=0)
-    scoundrel.Scoundrel.init(conf)
+    game = scoundrel.Scoundrel(conf)
     try:
-        scoundrel.Scoundrel.play()
+        game.play()
     except scoundrel.StopExecution:
-        print "DIAF"
+        print "Exiting..."
