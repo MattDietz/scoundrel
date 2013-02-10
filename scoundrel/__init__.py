@@ -159,6 +159,8 @@ class Scoundrel(object):
                     s_h = tile_size * ctxt.window_scaling[1]
                     m_x = x + view[0]
                     m_y = y + view[1]
+                    if m_x > len(game_map) or m_y > len(game_map[m_x]):
+                        break
                     rect = pygame.Rect(s_x, s_y, s_w, s_h)
                     pygame.draw.rect(ctxt.screen, colors[game_map[m_x][m_y]],
                                      rect)

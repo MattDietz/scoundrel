@@ -1,22 +1,2 @@
-Difference between graphics engine, game engine and game
-
-Unreal could probably be considered a graphics engine. We provide nice ways of drawing shit, maybe some AI
-A game engine would be something like RPG maker -> you have graphics wrapped up in a way that they're accessible within the context of building an RPG. Maybe something like Borderlands 2. There's a scripting engine and basic world palette there, and then actual content that comprises the game.
-
-The game itself is using the game engine to produce an actual game. 
-
-All entities in a game have two properties: what they do, and how they appear
-
-The graphics engine manages just how things look: "I want to load these resources, and display (visually) / play (audibly) in this manner"
-
-So how to represent game objects:
-
-The player:
-    He has sounds (display engine)
-    He has frames of animation (display engine)
-    He has controls (game engine)
-    He interacts with objects in the game (game engine)
-
-So we can either load any relevant display assets into the game engine under the scope of the actor, or we reference display assets in the game entity but leave the engine to manage those separately. Alternatively, you could treat the display engine as the parent of all things, and subclass a Drawable class and provide game implementation. However, I have concerns that we'd end up constrained by the graphics engine. I do think that's an acceptable implementation for the game engine in terms of the game (subclass Game Actor, provide frames of animation and some basic scripts for interaction etc)
-
-
+(standard input):        # NOTE(mdietz): for now, going to say 1 in game unit is 4 player
+(standard input):        #NOTE(mdietz): There's probably a window resized event we can catch
