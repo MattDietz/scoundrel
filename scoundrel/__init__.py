@@ -22,7 +22,7 @@ def make_map(width, height):
 view = (0, 0)
 
 # See below, but two columns and rows of tiles extra for scrolling
-map_size = (100, 100)
+map_size = (50, 50)
 view_size = (27,20)
 tile_size = 32
 game_map = []
@@ -75,9 +75,6 @@ class Scoundrel(object):
             view = (view[0] - 1, view[1])
             scoundrel.engine.context.screen_offset = (0, offset[1])
 
-        if player.position[0] < move_increment:
-            player.position[0] = move_increment
-
     def key_arrow_right(self):
         global view
         player = self.world.player
@@ -98,20 +95,47 @@ class Scoundrel(object):
             view = (view[0] + 1, view[1])
             scoundrel.engine.context.screen_offset = (0, offset[1])
 
-        if player.position[0] > self.world.conf['width']-move_increment:
-            player.position[0] = self.world.conf['width']-move_increment
-
     def key_arrow_up(self):
+        global view
+        player = self.world.player
+        ctxt = scoundrel.engine.context
+        offset = ctxt.screen_offset
+        camera = ctxt.camera
         player = self.world.player
         player.position[1] -= move_increment
-        if player.position[1] < move_increment:
-            player.position[1] = move_increment
+
+        # Scroll?
+        sy = (player.position[1] - camera[1]) * world_ratio
+        if sy <= 0.20 * scoundrel.engine.context.screen.get_size()[1]:
+            scoundrel.engine.context.screen_offset = \
+                        (offset[0], offset[1] + move_increment * world_ratio)
+            ctxt.camera = (camera[0], camera[1] - move_increment)
+
+        # should we move the view?
+        if tile_size + offset[1] == 0:
+            view = (view[0], view[1] + 1)
+            scoundrel.engine.context.screen_offset = (offset[0], 0)
 
     def key_arrow_down(self):
+        global view
+        player = self.world.player
+        ctxt = scoundrel.engine.context
+        offset = ctxt.screen_offset
+        camera = ctxt.camera
         player = self.world.player
         player.position[1] += move_increment
-        if player.position[1] > self.world.conf['height']-move_increment:
-            player.position[1] = self.world.conf['height']-move_increment
+
+        # Scroll?
+        sy = (player.position[1] - camera[1]) * world_ratio
+        if sy >= 0.80 * scoundrel.engine.context.screen.get_size()[1]:
+            scoundrel.engine.context.screen_offset = \
+                        (offset[0], offset[1] - move_increment * world_ratio)
+            ctxt.camera = (camera[0], camera[1] + move_increment)
+
+        # should we move the view?
+        if tile_size + offset[1] == 0:
+            view = (view[0], view[1] + 1)
+            scoundrel.engine.context.screen_offset = (offset[0], 0)
 
     def quit(self):
         raise StopExecution()
@@ -159,7 +183,9 @@ class Scoundrel(object):
                     s_h = tile_size * ctxt.window_scaling[1]
                     m_x = x + view[0]
                     m_y = y + view[1]
-                    if m_x > len(game_map) or m_y > len(game_map[m_x]):
+                    if m_x >= map_size[0] or m_y >= map_size[1]:
+                        break
+                    if m_x < 0 or m_y < 0:
                         break
                     rect = pygame.Rect(s_x, s_y, s_w, s_h)
                     pygame.draw.rect(ctxt.screen, colors[game_map[m_x][m_y]],

@@ -15,7 +15,7 @@ class Context(object):
 
         # Where to start drawing from, for scrolling tiles correctly
         self.camera = (0, 0)
-        self.screen_offset = (-tile_size, -tile_size)
+        self.screen_offset = (0, 0)
         window_size = screen.get_size()
         self.window_scaling = (window_size[0]/800, window_size[1]/600)
 
