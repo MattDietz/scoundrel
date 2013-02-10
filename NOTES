@@ -17,3 +17,6 @@ The player:
     He has controls (game engine)
     He interacts with objects in the game (game engine)
 
+So we can either load any relevant display assets into the game engine under the scope of the actor, or we reference display assets in the game entity but leave the engine to manage those separately. Alternatively, you could treat the display engine as the parent of all things, and subclass a Drawable class and provide game implementation. However, I have concerns that we'd end up constrained by the graphics engine. I do think that's an acceptable implementation for the game engine in terms of the game (subclass Game Actor, provide frames of animation and some basic scripts for interaction etc)
+
+

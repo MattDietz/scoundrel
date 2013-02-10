@@ -6,9 +6,22 @@ context = None
 
 
 class Context(object):
-    def __init__(self, screen=None, clock=None):
-        self.clock = clock
+    def __init__(self, screen, clock, tile_size, view_size, world_ratio):
         self.screen = screen
+        self.clock = clock
+        self.view_size = view_size
+        self.tile_size = tile_size
+        self.world_ratio = world_ratio
+
+        # Where to start drawing from, for scrolling tiles correctly
+        self.camera = (0, 0)
+        self.screen_offset = (-tile_size, -tile_size)
+        window_size = screen.get_size()
+        self.window_scaling = (window_size[0]/800, window_size[1]/600)
+
+    def screen_coords(self, position):
+        return ((position[0] - self.camera[0]) * self.world_ratio,
+                (position[1] - self.camera[1]) * self.world_ratio)
 
     def __enter__(self):
         return self
@@ -20,13 +33,12 @@ class Context(object):
                                    context.clock.get_fps())
 
 
-def init(conf):
+def init(conf, *args):
     global context
     pygame.init()
-    context = Context(clock=pygame.time.Clock())
-    context.screen = pygame.display.set_mode((conf['width'],
-                                              conf['height']),
-                                              conf['mode_flags'])
+    screen = pygame.display.set_mode((conf['width'], conf['height']),
+                                      conf['mode_flags'])
+    context = Context(screen, pygame.time.Clock(), *args)
 
 
 def drawing_context():
