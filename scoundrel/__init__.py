@@ -2,10 +2,11 @@ import random
 import time
 
 import pygame
+import pygame.image
 import pygame.locals
 
 import scoundrel.actor.player
-import scoundrel.engine
+import scoundrel.context
 import scoundrel.world
 
 
@@ -17,7 +18,7 @@ def make_map(width, height):
     for i in xrange(height):
         game_map.append([])
         for j in xrange(width):
-            game_map[i].append(random.randint(0, 5))
+            game_map[i].append(1)
 
 map_size = (100, 100)
 game_map = []
@@ -30,7 +31,6 @@ class Scoundrel(object):
 
     def __init__(self, conf):
         make_map(map_size[0], map_size[1])
-
         pygame.init()
         screen = pygame.display.set_mode((conf['width'], conf['height']),
                                       conf['mode_flags'])
@@ -41,12 +41,17 @@ class Scoundrel(object):
             conf.pop(k)
         conf["view"] = (0, 0)
 
-        self.context = scoundrel.engine.Context(screen,
-                                                pygame.time.Clock(),
-                                                **conf)
+        self.context = scoundrel.context.Context(screen,
+                                                 pygame.time.Clock(),
+                                                 **conf)
+        self.images = [self.load_images("content/grass_1.png")]
 
         # Default values weren't working on a mac
         pygame.key.set_repeat(10, 10)
+
+    def load_images(self, path):
+        img = pygame.image.load(path).convert()
+        return img
 
     def init_keymap(self, conf):
         self.keymap = {
@@ -78,10 +83,11 @@ class Scoundrel(object):
 
     def key_arrow_right(self, ctxt):
         view = ctxt.view
-        player = self.world.player
-        player.position[0] += move_increment
         offset = ctxt.screen_offset
         camera = ctxt.camera
+
+        player = self.world.player
+        player.position[0] += move_increment
 
         # Scroll?
         sx = (player.position[0] - camera[0]) * ctxt.world_ratio
@@ -113,8 +119,8 @@ class Scoundrel(object):
             ctxt.camera = (camera[0], camera[1] - move_increment)
 
         # should we move the view?
-        if ctxt.tile_size + offset[1] == 0:
-            ctxt.view = (view[0], view[1] + 1)
+        if ctxt.tile_size - offset[1] == 0:
+            ctxt.view = (view[0], view[1] - 1)
             ctxt.screen_offset = (offset[0], 0)
 
     def key_arrow_down(self, ctxt):
@@ -169,10 +175,7 @@ class Scoundrel(object):
         #NOTE(mdietz): There's probably a window resized event we can catch
         #              so we should adjust the scaling numbers there
         with self.context as ctxt:
-            ctxt.screen.fill(scoundrel.engine.colors['black'])
-            e = scoundrel.engine.colors
-            colors = [e["green"], e["gray"], e["blue"], e["white"],
-                      e["yellow"], e["brown"]]
+            ctxt.screen.fill(scoundrel.context.colors['black'])
             for x in xrange(0, ctxt.view_size[0]+1):
                 for y in xrange(0, ctxt.view_size[1]+1):
                     s_x = (x * ctxt.window_scaling[0] *
@@ -186,17 +189,19 @@ class Scoundrel(object):
                     m_x = x + ctxt.view[0]
                     m_y = y + ctxt.view[1]
                     if m_x >= map_size[0] or m_y >= map_size[1]:
-                        break
+                        continue
                     if m_x < 0 or m_y < 0:
-                        break
+                        continue
                     rect = pygame.Rect(s_x, s_y, s_w, s_h)
-                    pygame.draw.rect(ctxt.screen, colors[game_map[m_x][m_y]],
-                                     rect)
+                    ctxt.screen.blit(self.images[0], rect)
             self.world.draw(ctxt)
 
     def play(self):
-        while True:
-            #self.play_audio()
-            self.draw()
-            self.handle_events()
-            #self.ai()
+        try:
+            while True:
+                #self.play_audio()
+                self.draw()
+                self.handle_events()
+                #self.ai()
+        except scoundrel.StopIteration:
+            pass

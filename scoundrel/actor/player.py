@@ -1,7 +1,7 @@
 import pygame
 
 import scoundrel.actor.base
-import scoundrel.engine
+import scoundrel.context
 
 class PlayerActor(scoundrel.actor.base.Actor):
     def draw(self, context):
@@ -10,5 +10,5 @@ class PlayerActor(scoundrel.actor.base.Actor):
         world coordinates to screen coordinates
         """
 
-        pygame.draw.circle(context.screen, scoundrel.engine.colors['red'],
+        pygame.draw.circle(context.screen, scoundrel.context.colors['red'],
                            context.screen_coords(self.position), 15)

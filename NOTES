@@ -1,2 +1,1 @@
-(standard input):        # NOTE(mdietz): for now, going to say 1 in game unit is 4 player
 (standard input):        #NOTE(mdietz): There's probably a window resized event we can catch

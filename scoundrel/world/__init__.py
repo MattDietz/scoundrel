@@ -1,5 +1,3 @@
-import scoundrel.engine
-
 class World(object):
     def __init__(self, player):
         self.actors = []

@@ -30,5 +30,7 @@ class Context(object):
     def __exit__(self, type, value, traceback):
         pygame.display.flip()
         self.clock.tick(60)
-        pygame.display.set_caption("Scoundrel FPS: %d" %\
-                                   self.clock.get_fps())
+        pygame.display.set_caption(
+            "Scoundrel FPS: %d View: %s Camera: %s Offset %s" %
+                (self.clock.get_fps(), self.view, self.camera,
+                 self.screen_offset))
