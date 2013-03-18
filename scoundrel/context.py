@@ -45,6 +45,4 @@ class Context(object):
         self.view_ext = (self.view[0] + self.view_size[0],
                          self.view[1] + self.view_size[1])
         pygame.display.set_caption(
-            "Scoundrel FPS: %d View: %s - %s Camera: %s Offset %s" %
-                (self.clock.get_fps(), self.view, self.view_ext, self.camera,
-                 self.screen_offset))
+            "Scoundrel FPS: %d" % self.clock.get_fps())
