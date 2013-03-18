@@ -18,7 +18,7 @@ def make_map(width, height):
     for i in xrange(height):
         game_map.append([])
         for j in xrange(width):
-            game_map[i].append(1)
+            game_map[i].append(random.randint(0,1))
 
 map_size = (100, 100)
 game_map = []
@@ -37,8 +37,6 @@ class Scoundrel(object):
         self.init_keymap(conf)
         player = scoundrel.actor.player.PlayerActor([10, 10])
         self.world = scoundrel.world.World(player)
-        for k in ["width", "height", "mode_flags", "scroll_percentage"]:
-            conf.pop(k)
         conf["view"] = (0, 0)
 
         self.context = scoundrel.context.Context(screen,
@@ -47,7 +45,7 @@ class Scoundrel(object):
         self.images = [self.load_images("content/grass_1.png")]
 
         # Default values weren't working on a mac
-        pygame.key.set_repeat(10, 10)
+        pygame.key.set_repeat(15, 15)
 
     def load_images(self, path):
         img = pygame.image.load(path).convert()
@@ -71,7 +69,7 @@ class Scoundrel(object):
 
         # Scroll?
         sx = (player.position[0] - camera[0]) * ctxt.world_ratio
-        if sx <= 0.35 * ctxt.screen.get_size()[0]:
+        if sx <= ctxt.slack[0] * ctxt.screen.get_size()[0]:
             ctxt.screen_offset = (offset[0] + move_increment
                                   * ctxt.world_ratio, offset[1])
             ctxt.camera = (camera[0] - move_increment, camera[1])
@@ -91,7 +89,7 @@ class Scoundrel(object):
 
         # Scroll?
         sx = (player.position[0] - camera[0]) * ctxt.world_ratio
-        if sx >= 0.65 * ctxt.screen.get_size()[0]:
+        if sx >= (1 - ctxt.slack[0]) * ctxt.screen.get_size()[0]:
             ctxt.screen_offset = \
                         (offset[0] - move_increment * ctxt.world_ratio,
                          offset[1])
@@ -112,7 +110,7 @@ class Scoundrel(object):
 
         # Scroll?
         sy = (player.position[1] - camera[1]) * ctxt.world_ratio
-        if sy <= 0.20 * ctxt.screen.get_size()[1]:
+        if sy <= ctxt.slack[1] * ctxt.screen.get_size()[1]:
             ctxt.screen_offset = \
                         (offset[0], offset[1] + move_increment *
                          ctxt.world_ratio)
@@ -133,7 +131,7 @@ class Scoundrel(object):
 
         # Scroll?
         sy = (player.position[1] - camera[1]) * ctxt.world_ratio
-        if sy >= 0.80 * ctxt.screen.get_size()[1]:
+        if sy >= (1 - ctxt.slack[1]) * ctxt.screen.get_size()[1]:
             ctxt.screen_offset = \
                         (offset[0], offset[1] - move_increment *
                          ctxt.world_ratio)
@@ -144,7 +142,7 @@ class Scoundrel(object):
             ctxt.view = (view[0], view[1] + 1)
             ctxt.screen_offset = (offset[0], 0)
 
-    def quit(self):
+    def quit(self, key):
         raise StopExecution()
 
     def handle_events(self):
@@ -152,9 +150,11 @@ class Scoundrel(object):
             if event.type == pygame.locals.QUIT:
                 raise StopExecution()
             if event.type == pygame.locals.KEYDOWN:
-                handler = self.keymap.get(event.key)
-                if handler:
-                    handler(self.context)
+                keys = pygame.key.get_pressed()
+                for key in self.keymap.keys():
+                    if keys[key]:
+                        self.keymap[key](self.context)
+        pygame.event.pump()
 
     def draw(self):
         """
@@ -193,7 +193,13 @@ class Scoundrel(object):
                     if m_x < 0 or m_y < 0:
                         continue
                     rect = pygame.Rect(s_x, s_y, s_w, s_h)
-                    ctxt.screen.blit(self.images[0], rect)
+                    pygame.draw.rect(ctxt.screen,
+                        scoundrel.context.colors["red"], rect, 2)
+                    if game_map[x][y]:
+                        ctxt.screen.blit(self.images[0], rect)
+                    else:
+                        pygame.draw.rect(ctxt.screen,
+                            scoundrel.context.colors["green"], rect, 2)
             self.world.draw(ctxt)
 
     def play(self):
@@ -203,5 +209,5 @@ class Scoundrel(object):
                 self.draw()
                 self.handle_events()
                 #self.ai()
-        except scoundrel.StopIteration:
+        except scoundrel.StopExecution:
             pass
