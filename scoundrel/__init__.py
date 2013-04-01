@@ -88,6 +88,7 @@ class Scoundrel(object):
         player.position[0] += move_increment
 
         # Scroll?
+        # if player is at or greater than x% from the edge, scroll
         sx = (player.position[0] - camera[0]) * ctxt.world_ratio
         if sx >= (1 - ctxt.slack[0]) * ctxt.screen.get_size()[0]:
             ctxt.screen_offset = \
@@ -176,26 +177,32 @@ class Scoundrel(object):
         #              so we should adjust the scaling numbers there
         with self.context as ctxt:
             ctxt.screen.fill(scoundrel.context.colors['black'])
-            for x in xrange(0, ctxt.view_size[0]+1):
-                for y in xrange(0, ctxt.view_size[1]+1):
+            for x in xrange(-1, ctxt.view_size[0]+1):
+                for y in xrange(-1, ctxt.view_size[1]+1):
+                    # Screen projection
                     s_x = (x * ctxt.window_scaling[0] *
-                                ctxt.tile_size + ctxt.screen_offset[0]
-                                - ctxt.tile_size)
+                           ctxt.tile_size + ctxt.screen_offset[0])
                     s_y = (y * ctxt.window_scaling[1] *
-                                ctxt.tile_size + ctxt.screen_offset[1]
-                                - ctxt.tile_size)
+                           ctxt.tile_size + ctxt.screen_offset[1])
+
+                    # Scaled tile dimensions
                     s_w = ctxt.tile_size * ctxt.window_scaling[0]
                     s_h = ctxt.tile_size * ctxt.window_scaling[1]
+
+                    # Map Indices
                     m_x = x + ctxt.view[0]
                     m_y = y + ctxt.view[1]
-                    if m_x >= map_size[0] or m_y >= map_size[1]:
+
+                    # Don't go array oob
+                    if m_x >= map_size[0] - 1 or m_y >= map_size[1] - 1:
                         continue
                     if m_x < 0 or m_y < 0:
                         continue
+
                     rect = pygame.Rect(s_x, s_y, s_w, s_h)
                     pygame.draw.rect(ctxt.screen,
                         scoundrel.context.colors["red"], rect, 2)
-                    if game_map[x][y]:
+                    if game_map[m_x][m_y]:
                         ctxt.screen.blit(self.images[0], rect)
                     else:
                         pygame.draw.rect(ctxt.screen,
