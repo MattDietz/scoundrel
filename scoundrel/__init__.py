@@ -18,14 +18,12 @@ def make_map(width, height):
     for i in xrange(height):
         game_map.append([])
         for j in xrange(width):
-            game_map[i].append(random.randint(0,1))
+            game_map[i].append(1)
 
 map_size = (100, 100)
 game_map = []
 
-timer = None
-ticks = 0
-move_increment = 1
+move_increment = 2
 
 class Scoundrel(object):
 
@@ -35,19 +33,21 @@ class Scoundrel(object):
         screen = pygame.display.set_mode((conf['width'], conf['height']),
                                       conf['mode_flags'])
         self.init_keymap(conf)
-        player = scoundrel.actor.player.PlayerActor([10, 10])
+        player = scoundrel.actor.player.PlayerActor([10, 10],
+                                                    "content/zombie.png")
         self.world = scoundrel.world.World(player)
         conf["view"] = (0, 0)
 
         self.context = scoundrel.context.Context(screen,
                                                  pygame.time.Clock(),
                                                  **conf)
-        self.images = [self.load_images("content/grass_1.png")]
+        self.images = [self.load_image("content/grass_32.png"),
+                       self.load_image("content/heart32.png")]
 
         # Default values weren't working on a mac
-        pygame.key.set_repeat(15, 15)
+        pygame.key.set_repeat(30, 30)
 
-    def load_images(self, path):
+    def load_image(self, path):
         img = pygame.image.load(path).convert()
         return img
 
@@ -158,21 +158,6 @@ class Scoundrel(object):
         pygame.event.pump()
 
     def draw(self):
-        """
-        Concepts:
-
-        world - actual data from the world. Represented in game units
-        map_view - how much of the world we're showing, in tiles
-        camera - Offset to start drawing from in world coordinates Facilitates
-                 scrolling
-        display - the GUI viewport. The view is scaled to this. Always a bit
-                  smaller than the actual map view we're drawing
-                  Represented in pixels
-
-        The display should always show the same amount of information,
-        regardless of window size, so we need to scale to that size
-        """
-
         #NOTE(mdietz): There's probably a window resized event we can catch
         #              so we should adjust the scaling numbers there
         with self.context as ctxt:
@@ -200,14 +185,18 @@ class Scoundrel(object):
                         continue
 
                     rect = pygame.Rect(s_x, s_y, s_w, s_h)
-                    pygame.draw.rect(ctxt.screen,
-                        scoundrel.context.colors["red"], rect, 2)
                     if game_map[m_x][m_y]:
                         ctxt.screen.blit(self.images[0], rect)
                     else:
                         pygame.draw.rect(ctxt.screen,
                             scoundrel.context.colors["green"], rect, 2)
             self.world.draw(ctxt)
+
+            # Trying out heart display
+            for j in xrange(0, 2):
+                for k in xrange(0, 8):
+                    rect = pygame.Rect(k * 32 + 500, j * 32 + 10, 32, 32)
+                    ctxt.screen.blit(self.images[1], rect)
 
     def play(self):
         try:

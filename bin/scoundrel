@@ -14,10 +14,10 @@ import scoundrel
 conf = {
     "width": 1024,
     "height": 768,
-    "tile_size": 64,
+    "tile_size": 32,
     "world_ratio": 8,   # In engine units to pixels, maybe tuple
                         #later for actual ratio
-    "view_size": (27, 20),
+    "view_size": (32, 24),
     "mode_flags": 0,
     "slack": 0.2
 }

@@ -13,11 +13,15 @@ class Context(object):
         self.slack = self._setup_scrolls(self.conf)
 
         # Where to start drawing from, for scrolling tiles correctly
-        self.view = kwargs["view"]
         self.view_size = kwargs["view_size"]
         self.tile_size = kwargs["tile_size"]
         self.world_ratio = kwargs["world_ratio"]
+
+        # Really, the same thing, but decoupled atm
+        self.view = kwargs["view"]
         self.camera = (-40, -20)
+
+        # How far off the edge of the screen we start, simulating scrolling
         self.screen_offset = (0, 0)
         window_size = screen.get_size()
         self.window_scaling = (window_size[0] / 800, window_size[1] / 600)
