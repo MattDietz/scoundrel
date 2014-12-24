@@ -13,6 +13,26 @@ import scoundrel.world
 class StopExecution(Exception): pass
 
 
+def load_map(path):
+    global map_width, map_height
+    with open(path) as map_file:
+        metadata, map_data = map_file.read().split("\n")
+
+        metadata = metadata.split(',')
+        map_width = int(metadata[0])
+        map_height = int(metadata[1])
+
+        map_data = map_data.split(',')
+        for i in xrange(map_height):
+            game_map.append([])
+            for j in xrange(map_width):
+                offset = i * map_width + j
+
+                # XOR with 1. Map gen produces 0s for open and 1 for blocked
+                cell = int(map_data[offset]) ^ 1
+                game_map[i].append(cell)
+
+
 def make_map(width, height):
     global game_map
     for i in xrange(height):
@@ -20,21 +40,21 @@ def make_map(width, height):
         for j in xrange(width):
             game_map[i].append(1)
 
-map_size = (100, 100)
-game_map = []
 
+map_width, map_height = 100, 100
+game_map = []
 move_increment = 2
 
-class Scoundrel(object):
 
+class Scoundrel(object):
     def __init__(self, conf):
-        make_map(map_size[0], map_size[1])
+        load_map("output.txt")
         pygame.init()
         screen = pygame.display.set_mode((conf['width'], conf['height']),
                                       conf['mode_flags'])
         self.init_keymap(conf)
         player = scoundrel.actor.player.PlayerActor([10, 10],
-                                                    "content/zombie.png")
+                                                    "content/player.png")
         self.world = scoundrel.world.World(player)
         conf["view"] = (0, 0)
 
@@ -42,13 +62,42 @@ class Scoundrel(object):
                                                  pygame.time.Clock(),
                                                  **conf)
         self.images = [self.load_image("content/grass_32.png"),
-                       self.load_image("content/heart32.png")]
+                       self.load_image("content/heart32.png", alpha=True)]
+        self.images.extend(self._split_tilesheet(32, "content/tile_sheet.png"))
 
         # Default values weren't working on a mac
         pygame.key.set_repeat(30, 30)
 
-    def load_image(self, path):
-        img = pygame.image.load(path).convert()
+    def _split_tilesheet(self, tile_size, path):
+        # TODO(mdietz): implement metadata for tile properties and bounds
+        # TODO(mdietz): redo this so we can pass references and blit from one
+        #               loaded surface
+
+        img = pygame.image.load(path)
+        surface = img.convert()
+        width = surface.get_width()
+        height = surface.get_height()
+        offset_x, offset_y = 0, 0
+        loaded_surfaces = []
+        while offset_y < height:
+            img_rect = pygame.Rect(offset_x, offset_y, tile_size, tile_size)
+            s = pygame.Surface((tile_size, tile_size))
+            s.blit(surface, (0, 0), area=img_rect)
+            loaded_surfaces.append(s)
+            offset_x += tile_size
+            if offset_x > width:
+                offset_x = 0
+                offset_y += tile_size
+
+        return loaded_surfaces
+
+
+
+    def load_image(self, path, alpha=False):
+        if alpha:
+            img = pygame.image.load(path).convert_alpha()
+        else:
+            img = pygame.image.load(path).convert()
         return img
 
     def init_keymap(self, conf):
@@ -160,7 +209,7 @@ class Scoundrel(object):
     def draw(self):
         #NOTE(mdietz): There's probably a window resized event we can catch
         #              so we should adjust the scaling numbers there
-        with self.context as ctxt:
+        with self.context as (ctxt, last_frame):
             ctxt.screen.fill(scoundrel.context.colors['black'])
             for x in xrange(-1, ctxt.view_size[0]+1):
                 for y in xrange(-1, ctxt.view_size[1]+1):
@@ -179,7 +228,7 @@ class Scoundrel(object):
                     m_y = y + ctxt.view[1]
 
                     # Don't go array oob
-                    if m_x >= map_size[0] - 1 or m_y >= map_size[1] - 1:
+                    if m_x >= map_width - 1 or m_y >= map_height - 1:
                         continue
                     if m_x < 0 or m_y < 0:
                         continue
@@ -190,15 +239,25 @@ class Scoundrel(object):
                     else:
                         pygame.draw.rect(ctxt.screen,
                             scoundrel.context.colors["green"], rect, 2)
+            offset_x = 0
+            for img in self.images:
+                rect = pygame.Rect(offset_x, 0, 32, 32)
+                ctxt.screen.blit(img, rect)
+                offset_x += 32
+
             self.world.draw(ctxt)
 
             # Trying out heart display
-            for j in xrange(0, 2):
-                for k in xrange(0, 8):
-                    rect = pygame.Rect(k * 32 + 500, j * 32 + 10, 32, 32)
-                    ctxt.screen.blit(self.images[1], rect)
+            # for j in xrange(0, 2):
+            #     for k in xrange(0, 8):
+            #         rect = pygame.Rect(k * 32 + 500, j * 32 + 10, 32, 32)
+            #         ctxt.screen.blit(self.images[1], rect)
 
     def play(self):
+        # Tick a frame once so the frame time looks appropriate
+        with self.context:
+            pass
+
         try:
             while True:
                 #self.play_audio()

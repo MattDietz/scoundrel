@@ -3,6 +3,7 @@ import pygame
 import scoundrel.actor.base
 import scoundrel.context
 
+
 class PlayerActor(scoundrel.actor.base.Actor):
     def __init__(self, position, path):
         super(PlayerActor, self).__init__(position)

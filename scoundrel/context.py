@@ -11,6 +11,7 @@ class Context(object):
         self.screen = screen
         self.clock = clock
         self.slack = self._setup_scrolls(self.conf)
+        self._last_frame_time = -1
 
         # Where to start drawing from, for scrolling tiles correctly
         self.view_size = kwargs["view_size"]
@@ -41,11 +42,11 @@ class Context(object):
                 (position[1] - self.camera[1]) * self.world_ratio)
 
     def __enter__(self):
-        return self
+        return self, self._last_frame_time
 
     def __exit__(self, type, value, traceback):
         pygame.display.flip()
-        self.clock.tick(60)
+        self._last_frame_time = self.clock.tick(60)
         self.view_ext = (self.view[0] + self.view_size[0],
                          self.view[1] + self.view_size[1])
         pygame.display.set_caption(
