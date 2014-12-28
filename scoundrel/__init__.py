@@ -1,3 +1,4 @@
+import json
 import random
 import time
 
@@ -7,7 +8,12 @@ import pygame.locals
 
 import scoundrel.actor.player
 import scoundrel.context
+import scoundrel.log
+import scoundrel.registry
+import scoundrel.registry.loader
 import scoundrel.world
+
+LOG = scoundrel.log.LOG
 
 
 class StopExecution(Exception): pass
@@ -41,6 +47,22 @@ def make_map(width, height):
             game_map[i].append(1)
 
 
+def load_resources(registry, path):
+    with open(path) as resource_file:
+        resource_blob = json.load(resource_file)
+
+    for key, resource_meta in resource_blob.items():
+        loader_key = "load_%s" % resource_meta["type"]
+        resource_loader = getattr(scoundrel.registry.loader, loader_key, None)
+        if resource_loader:
+            new_resource = resource_loader(key, resource_meta)
+            registry.add(new_resource)
+            LOG.debug("Loaded '%s' of type '%s'" % (key,
+                                                    resource_meta["type"]))
+        else:
+            LOG.error("No loader found for type %s" % resource_meta["type"])
+
+
 map_width, map_height = 100, 100
 game_map = []
 move_increment = 2
@@ -48,11 +70,20 @@ move_increment = 2
 
 class Scoundrel(object):
     def __init__(self, conf):
+        scoundrel.log.setup_logging()
+        LOG.debug("Initializing Scoundrel...")
+
+        self._registry = scoundrel.registry.Registry()
         load_map("output.txt")
+        LOG.debug("Map loaded")
         pygame.init()
         screen = pygame.display.set_mode((conf['width'], conf['height']),
                                       conf['mode_flags'])
         self.init_keymap(conf)
+        # TODO(mdietz): should be callable by the implementing game, later,
+        #               with maps and resource paths
+
+        load_resources(self._registry, "resources.json")
         player = scoundrel.actor.player.PlayerActor([10, 10],
                                                     "content/player.png")
         self.world = scoundrel.world.World(player)
@@ -61,8 +92,8 @@ class Scoundrel(object):
         self.context = scoundrel.context.Context(screen,
                                                  pygame.time.Clock(),
                                                  **conf)
-        self.images = [self.load_image("content/grass_32.png"),
-                       self.load_image("content/heart32.png", alpha=True)]
+        self.images = [self._registry.get_named("grass")._data]
+
         self.images.extend(self._split_tilesheet(32, "content/tile_sheet.png"))
 
         # Default values weren't working on a mac
@@ -239,11 +270,11 @@ class Scoundrel(object):
                     else:
                         pygame.draw.rect(ctxt.screen,
                             scoundrel.context.colors["green"], rect, 2)
-            offset_x = 0
-            for img in self.images:
-                rect = pygame.Rect(offset_x, 0, 32, 32)
-                ctxt.screen.blit(img, rect)
-                offset_x += 32
+            # offset_x = 0
+            # for img in self.images:
+            #     rect = pygame.Rect(offset_x, 0, 32, 32)
+            #     ctxt.screen.blit(img, rect)
+            #     offset_x += 32
 
             self.world.draw(ctxt)
 
